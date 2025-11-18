@@ -1,5 +1,5 @@
 import { ShoppingCart, User, LogOut } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "./ThemeToggle";
@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface CustomerHeaderProps {
   cartItemCount?: number;
@@ -19,6 +19,9 @@ interface CustomerHeaderProps {
 }
 
 export function CustomerHeader({ cartItemCount = 0, onCartClick }: CustomerHeaderProps) {
+  const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+  
   const { data: user } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
@@ -29,11 +32,18 @@ export function CustomerHeader({ cartItemCount = 0, onCartClick }: CustomerHeade
   });
 
   const handleLogout = async () => {
-    await fetch("/api/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-    window.location.href = "/";
+    try {
+      await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      localStorage.removeItem("cart");
+      queryClient.clear();
+      setLocation("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setLocation("/");
+    }
   };
 
   return (

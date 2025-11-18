@@ -56,10 +56,13 @@ export default function Checkout() {
         items,
       };
 
-      return apiRequest("POST", "/api/orders", payload);
+      const res = await apiRequest("POST", "/api/orders", payload);
+      if (!res.ok) {
+        throw new Error("Failed to create order");
+      }
+      return res.json();
     },
-    onSuccess: async (res) => {
-      const order = await res.json();
+    onSuccess: (order) => {
       localStorage.removeItem("cart");
       toast({
         title: "Pedido creado exitosamente",

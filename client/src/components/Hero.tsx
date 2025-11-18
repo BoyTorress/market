@@ -1,27 +1,26 @@
 import { Button } from "@/components/ui/button";
-import { useLocation } from "wouter";
 import heroImage from "@assets/generated_images/Korean_market_hero_banner_6f579b9a.png";
 
 interface HeroProps {
   isAuthenticated?: boolean;
+  onOrderNow?: () => void;
+  onViewMenu?: () => void;
 }
 
-export function Hero({ isAuthenticated = false }: HeroProps) {
-  const [, setLocation] = useLocation();
-
+export function Hero({ isAuthenticated = false, onOrderNow, onViewMenu }: HeroProps) {
   const handleOrderNow = () => {
-    if (isAuthenticated) {
+    if (onOrderNow) {
+      onOrderNow();
+    } else if (isAuthenticated) {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    } else {
-      setLocation("/");
     }
   };
 
   const handleViewMenu = () => {
-    if (isAuthenticated) {
+    if (onViewMenu) {
+      onViewMenu();
+    } else if (isAuthenticated) {
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    } else {
-      setLocation("/");
     }
   };
 

@@ -129,7 +129,7 @@ export default function Home() {
           {user && (
             <div className="mb-6 rounded-lg bg-primary/5 border border-primary/20 p-4">
               <h2 className="text-2xl font-bold">
-                ¡Bienvenido{user.firstName ? `, ${user.firstName}` : ''}! 👋
+                ¡Bienvenido{user.firstName ? `, ${user.firstName}` : ''}!
               </h2>
               <p className="text-muted-foreground mt-1">
                 Explora nuestros productos coreanos y encuentra tus favoritos

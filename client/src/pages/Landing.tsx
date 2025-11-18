@@ -30,6 +30,7 @@ export default function Landing() {
       return res.json();
     },
     onSuccess: () => {
+      setShowAuth(false);
       window.location.href = "/";
     },
     onError: (error: Error) => {
@@ -257,7 +258,11 @@ export default function Landing() {
         </Button>
       </header>
 
-      <Hero isAuthenticated={false} />
+      <Hero 
+        isAuthenticated={false} 
+        onOrderNow={() => setShowAuth(true)}
+        onViewMenu={() => setShowAuth(true)}
+      />
 
       <section className="container mx-auto px-4 py-16 text-center">
         <h2 className="mb-4 text-3xl font-bold">Tus Productos Coreanos Favoritos</h2>
