@@ -1,7 +1,32 @@
 import { storage } from "./storage";
+import bcrypt from "bcrypt";
 
 async function seed() {
   console.log("Starting seed...");
+
+  // Create admin user
+  const adminPassword = await bcrypt.hash("admin123", 10);
+  await storage.createUser({
+    email: "admin@ramen.com",
+    password: adminPassword,
+    firstName: "Admin",
+    lastName: "Principal",
+    role: "admin",
+  });
+
+  // Create a demo customer user
+  const customerPassword = await bcrypt.hash("customer123", 10);
+  await storage.createUser({
+    email: "cliente@ejemplo.com",
+    password: customerPassword,
+    firstName: "Cliente",
+    lastName: "Demo",
+    role: "customer",
+  });
+
+  console.log("Users created");
+  console.log("Admin: admin@ramen.com / admin123");
+  console.log("Cliente: cliente@ejemplo.com / customer123");
 
   // Create menu categories
   const ramenCategory = await storage.createCategory({

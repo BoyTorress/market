@@ -1,6 +1,5 @@
-import { drizzle } from "drizzle-orm/neon-serverless";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
 import { eq, and, desc, asc, gte, lte, sql, like, or } from "drizzle-orm";
 import {
   users,
@@ -26,17 +25,24 @@ import {
   type InsertOrderStatusEvent,
   type OrderItem,
 } from "@shared/schema";
+import * as fs from "fs";
+import * as path from "path";
 
-neonConfig.webSocketConstructor = ws;
+// Ensure data directory exists
+const dataDir = path.join(process.cwd(), "data");
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const db = drizzle(pool);
+const sqlite = new Database(path.join(dataDir, "database.sqlite"));
+const db = drizzle(sqlite);
 
 export interface IStorage {
-  // Users (required for Replit Auth)
+  // Users
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
-  upsertUser(user: any): Promise<User>;
+  createUser(user: Omit<InsertUser, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
+  updateUser(id: string, user: Partial<InsertUser>): Promise<User | undefined>;
   
   // Menu Categories
   getAllCategories(): Promise<MenuCategory[]>;
@@ -80,8 +86,8 @@ export interface IStorage {
   getTopSellingItems(limit: number): Promise<{ itemName: string; quantity: number; revenue: number }[]>;
 }
 
-export class PgStorage implements IStorage {
-  // Users (required for Replit Auth)
+export class SqliteStorage implements IStorage {
+  // Users
   async getUser(id: string): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.id, id));
     return result[0];
@@ -92,19 +98,18 @@ export class PgStorage implements IStorage {
     return result[0];
   }
 
-  async upsertUser(userData: any): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
+  async createUser(userData: Omit<InsertUser, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
+    const result = await db.insert(users).values(userData as any).returning();
+    return result[0];
+  }
+
+  async updateUser(id: string, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const result = await db
+      .update(users)
+      .set({ ...userData, updatedAt: new Date(Date.now()) })
+      .where(eq(users.id, id))
       .returning();
-    return user;
+    return result[0];
   }
 
   // Menu Categories
@@ -203,7 +208,7 @@ export class PgStorage implements IStorage {
   async updateInventoryItem(id: string, item: Partial<InsertInventoryItem>): Promise<InventoryItem | undefined> {
     const result = await db
       .update(inventoryItems)
-      .set({ ...item, updatedAt: new Date() })
+      .set({ ...item, updatedAt: new Date(Date.now()) })
       .where(eq(inventoryItems.id, id))
       .returning();
     return result[0];
@@ -211,15 +216,13 @@ export class PgStorage implements IStorage {
 
   async adjustInventory(adjustment: InsertInventoryAdjustment): Promise<void> {
     await db.transaction(async (tx) => {
-      // Record the adjustment
       await tx.insert(inventoryAdjustments).values(adjustment);
       
-      // Update the current stock
       await tx
         .update(inventoryItems)
         .set({
           currentStock: sql`${inventoryItems.currentStock} + ${adjustment.delta}`,
-          updatedAt: new Date(),
+          updatedAt: new Date(Date.now()),
         })
         .where(eq(inventoryItems.id, adjustment.inventoryItemId));
     });
@@ -269,17 +272,14 @@ export class PgStorage implements IStorage {
 
   async createOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order> {
     const result = await db.transaction(async (tx) => {
-      // Create the order
       const [newOrder] = await tx.insert(orders).values(order).returning();
 
-      // Create order items
       const itemsWithOrderId = items.map((item) => ({
         ...item,
         orderId: newOrder.id,
       }));
       await tx.insert(orderItems).values(itemsWithOrderId);
 
-      // Create initial status event
       await tx.insert(orderStatusEvents).values({
         orderId: newOrder.id,
         status: order.status,
@@ -294,16 +294,14 @@ export class PgStorage implements IStorage {
 
   async updateOrderStatus(id: string, status: string, note?: string): Promise<Order | undefined> {
     const result = await db.transaction(async (tx) => {
-      // Update order status
       const [updatedOrder] = await tx
         .update(orders)
-        .set({ status: status as any, updatedAt: new Date() })
+        .set({ status: status as any, updatedAt: new Date(Date.now()) })
         .where(eq(orders.id, id))
         .returning();
 
       if (!updatedOrder) return undefined;
 
-      // Create status event
       await tx.insert(orderStatusEvents).values({
         orderId: id,
         status: status as any,
@@ -333,7 +331,6 @@ export class PgStorage implements IStorage {
     const totalOrders = completedOrders.length;
     const averageOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0;
 
-    // Group by date
     const dailyMap = new Map<string, { sales: number; orders: number }>();
     completedOrders.forEach((order) => {
       const date = order.createdAt!.toISOString().split("T")[0];
@@ -350,7 +347,7 @@ export class PgStorage implements IStorage {
     }));
 
     return {
-      totalSales: totalSales / 100, // Convert to dollars
+      totalSales: totalSales / 100,
       totalOrders,
       averageOrderValue: averageOrderValue / 100,
       dailySales: dailySales.map((d) => ({ ...d, sales: d.sales / 100 })),
@@ -361,8 +358,8 @@ export class PgStorage implements IStorage {
     const result = await db
       .select({
         itemName: orderItems.menuItemName,
-        quantity: sql<number>`SUM(${orderItems.quantity})::int`,
-        revenue: sql<number>`SUM(${orderItems.priceCents} * ${orderItems.quantity})::int`,
+        quantity: sql<number>`SUM(${orderItems.quantity})`,
+        revenue: sql<number>`SUM(${orderItems.priceCents} * ${orderItems.quantity})`,
       })
       .from(orderItems)
       .innerJoin(orders, eq(orderItems.orderId, orders.id))
@@ -373,9 +370,9 @@ export class PgStorage implements IStorage {
 
     return result.map((r) => ({
       ...r,
-      revenue: r.revenue / 100, // Convert to dollars
+      revenue: r.revenue / 100,
     }));
   }
 }
 
-export const storage = new PgStorage();
+export const storage = new SqliteStorage();

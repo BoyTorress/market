@@ -1,51 +1,35 @@
 import { sql } from "drizzle-orm";
 import { 
-  pgTable, 
+  sqliteTable, 
   text, 
-  varchar, 
-  integer, 
-  timestamp, 
-  boolean,
-  pgEnum,
-  index,
-  jsonb
-} from "drizzle-orm/pg-core";
+  integer
+} from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Enums
-export const userRoleEnum = pgEnum("user_role", ["customer", "admin"]);
-export const orderStatusEnum = pgEnum("order_status", [
-  "pending",
-  "confirmed",
-  "preparing",
-  "ready",
-  "completed",
-  "cancelled"
-]);
-export const pickupTypeEnum = pgEnum("pickup_type", ["now", "scheduled"]);
+// Helper function for generating UUIDs
+function generateId() {
+  return crypto.randomUUID();
+}
 
-// Session storage table (required for Replit Auth)
-export const sessions = pgTable(
-  "sessions",
-  {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
-  },
-  (table) => [index("IDX_session_expire").on(table.expire)],
-);
+// Session storage table for express-session
+export const sessions = sqliteTable("sessions", {
+  sid: text("sid").primaryKey(),
+  sess: text("sess").notNull(),
+  expire: integer("expire", { mode: "timestamp" }).notNull(),
+});
 
-// Users table (adapted for Replit Auth)
-export const users = pgTable("users", {
-  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
-  role: userRoleEnum("role").notNull().default("customer"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+// Users table with password authentication
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey().$defaultFn(() => generateId()),
+  email: text("email").unique().notNull(),
+  password: text("password").notNull(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  profileImageUrl: text("profile_image_url"),
+  role: text("role", { enum: ["customer", "admin"] }).notNull().default("customer"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -53,17 +37,32 @@ export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
   updatedAt: true,
 });
+
+export const registerUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+});
+
+export const loginUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
+
 export const selectUserSchema = createSelectSchema(users);
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type RegisterUser = z.infer<typeof registerUserSchema>;
+export type LoginUser = z.infer<typeof loginUserSchema>;
 
 // Menu Categories
-export const menuCategories = pgTable("menu_categories", {
-  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
+export const menuCategories = sqliteTable("menu_categories", {
+  id: text("id").primaryKey().$defaultFn(() => generateId()),
   name: text("name").notNull().unique(),
   displayOrder: integer("display_order").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
 });
 
 export const insertMenuCategorySchema = createInsertSchema(menuCategories).omit({
@@ -74,18 +73,18 @@ export type InsertMenuCategory = z.infer<typeof insertMenuCategorySchema>;
 export type MenuCategory = typeof menuCategories.$inferSelect;
 
 // Menu Items
-export const menuItems = pgTable("menu_items", {
-  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
-  categoryId: varchar("category_id", { length: 255 })
+export const menuItems = sqliteTable("menu_items", {
+  id: text("id").primaryKey().$defaultFn(() => generateId()),
+  categoryId: text("category_id")
     .references(() => menuCategories.id, { onDelete: "cascade" })
     .notNull(),
   name: text("name").notNull(),
   description: text("description").notNull(),
   priceCents: integer("price_cents").notNull(),
   imageUrl: text("image_url").notNull(),
-  isAvailable: boolean("is_available").notNull().default(true),
+  isAvailable: integer("is_available", { mode: "boolean" }).notNull().default(true),
   stock: integer("stock").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
 });
 
 export const insertMenuItemSchema = createInsertSchema(menuItems).omit({
@@ -96,13 +95,13 @@ export type InsertMenuItem = z.infer<typeof insertMenuItemSchema>;
 export type MenuItem = typeof menuItems.$inferSelect;
 
 // Inventory Items
-export const inventoryItems = pgTable("inventory_items", {
-  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
+export const inventoryItems = sqliteTable("inventory_items", {
+  id: text("id").primaryKey().$defaultFn(() => generateId()),
   name: text("name").notNull().unique(),
   unit: text("unit").notNull(),
   currentStock: integer("current_stock").notNull().default(0),
   reorderPoint: integer("reorder_point").notNull().default(10),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
 });
 
 export const insertInventoryItemSchema = createInsertSchema(inventoryItems).omit({
@@ -113,17 +112,17 @@ export type InsertInventoryItem = z.infer<typeof insertInventoryItemSchema>;
 export type InventoryItem = typeof inventoryItems.$inferSelect;
 
 // Inventory Adjustments (Audit Trail)
-export const inventoryAdjustments = pgTable("inventory_adjustments", {
-  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
-  inventoryItemId: varchar("inventory_item_id", { length: 255 })
+export const inventoryAdjustments = sqliteTable("inventory_adjustments", {
+  id: text("id").primaryKey().$defaultFn(() => generateId()),
+  inventoryItemId: text("inventory_item_id")
     .references(() => inventoryItems.id, { onDelete: "cascade" })
     .notNull(),
-  userId: varchar("user_id", { length: 255 })
+  userId: text("user_id")
     .references(() => users.id)
     .notNull(),
   delta: integer("delta").notNull(),
   note: text("note"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
 });
 
 export const insertInventoryAdjustmentSchema = createInsertSchema(inventoryAdjustments).omit({
@@ -134,22 +133,24 @@ export type InsertInventoryAdjustment = z.infer<typeof insertInventoryAdjustment
 export type InventoryAdjustment = typeof inventoryAdjustments.$inferSelect;
 
 // Orders
-export const orders = pgTable("orders", {
-  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id", { length: 255 })
+export const orders = sqliteTable("orders", {
+  id: text("id").primaryKey().$defaultFn(() => generateId()),
+  userId: text("user_id")
     .references(() => users.id)
     .notNull(),
   orderNumber: text("order_number").notNull().unique(),
-  status: orderStatusEnum("status").notNull().default("pending"),
-  pickupType: pickupTypeEnum("pickup_type").notNull().default("now"),
-  scheduledTime: timestamp("scheduled_time"),
+  status: text("status", { 
+    enum: ["pending", "confirmed", "preparing", "ready", "completed", "cancelled"] 
+  }).notNull().default("pending"),
+  pickupType: text("pickup_type", { enum: ["now", "scheduled"] }).notNull().default("now"),
+  scheduledTime: integer("scheduled_time", { mode: "timestamp" }),
   totalCents: integer("total_cents").notNull(),
   taxCents: integer("tax_cents").notNull(),
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone"),
   specialInstructions: text("special_instructions"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
 });
 
 export const insertOrderSchema = createInsertSchema(orders).omit({
@@ -161,12 +162,12 @@ export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type Order = typeof orders.$inferSelect;
 
 // Order Items
-export const orderItems = pgTable("order_items", {
-  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
-  orderId: varchar("order_id", { length: 255 })
+export const orderItems = sqliteTable("order_items", {
+  id: text("id").primaryKey().$defaultFn(() => generateId()),
+  orderId: text("order_id")
     .references(() => orders.id, { onDelete: "cascade" })
     .notNull(),
-  menuItemId: varchar("menu_item_id", { length: 255 })
+  menuItemId: text("menu_item_id")
     .references(() => menuItems.id),
   menuItemName: text("menu_item_name").notNull(),
   quantity: integer("quantity").notNull(),
@@ -180,14 +181,16 @@ export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
 export type OrderItem = typeof orderItems.$inferSelect;
 
 // Order Status Events (Timeline)
-export const orderStatusEvents = pgTable("order_status_events", {
-  id: varchar("id", { length: 255 }).primaryKey().default(sql`gen_random_uuid()`),
-  orderId: varchar("order_id", { length: 255 })
+export const orderStatusEvents = sqliteTable("order_status_events", {
+  id: text("id").primaryKey().$defaultFn(() => generateId()),
+  orderId: text("order_id")
     .references(() => orders.id, { onDelete: "cascade" })
     .notNull(),
-  status: orderStatusEnum("status").notNull(),
+  status: text("status", { 
+    enum: ["pending", "confirmed", "preparing", "ready", "completed", "cancelled"] 
+  }).notNull(),
   note: text("note"),
-  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  timestamp: integer("timestamp", { mode: "timestamp" }).$defaultFn(() => new Date()).notNull(),
 });
 
 export const insertOrderStatusEventSchema = createInsertSchema(orderStatusEvents).omit({

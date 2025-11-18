@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
+import { setupAuth, isAuthenticated, isAdmin } from "./auth";
 import { 
   insertMenuItemSchema, 
   insertMenuCategorySchema,
@@ -12,27 +12,6 @@ import {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
-
-  // ============ AUTH ROUTES ============
-  app.get("/api/auth/user", async (req: any, res) => {
-    try {
-      if (!req.isAuthenticated() || !req.user?.claims?.sub) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-      
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
 
   // ============ MENU CATEGORY ROUTES ============
   app.get("/api/categories", async (_req, res) => {
@@ -189,7 +168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/inventory/:id/adjust", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { delta, note } = req.body;
       
       await storage.adjustInventory({
@@ -210,10 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ ORDER ROUTES ============
   app.get("/api/orders", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      const user = req.user;
 
       let orders;
       if (user.role === "admin") {
@@ -241,10 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Order not found" });
       }
 
-      const user = await storage.getUser(req.user.claims.sub);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      const user = req.user;
 
       // Check permissions
       if (user.role !== "admin" && orderData.order.userId !== user.id) {
@@ -260,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/orders", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { items, customerName, customerPhone, pickupType, scheduledTime, specialInstructions } = req.body;
       
       if (!items || items.length === 0) {
