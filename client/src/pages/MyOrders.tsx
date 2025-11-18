@@ -1,9 +1,14 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { CustomerHeader } from "@/components/CustomerHeader";
 import { OrderStatusCard } from "@/components/OrderStatusCard";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
 import type { Order, OrderItem } from "@shared/schema";
 
 export default function MyOrders() {
+  const [, setLocation] = useLocation();
   const { data: orders = [], isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
   });
@@ -35,10 +40,10 @@ export default function MyOrders() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <CustomerHeader />
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 flex-1">
         <div className="mb-8">
           <h1 className="mb-2 font-serif text-4xl font-bold">Mis Pedidos</h1>
           <p className="text-muted-foreground">
@@ -48,9 +53,10 @@ export default function MyOrders() {
 
         {orders.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-muted-foreground mb-6">
               Aún no has realizado ningún pedido
             </p>
+            <Button onClick={() => setLocation("/")}>Ver Productos</Button>
           </div>
         ) : (
           <div className="grid gap-6 lg:grid-cols-2">
@@ -89,6 +95,8 @@ export default function MyOrders() {
           </div>
         )}
       </div>
+      
+      <Footer />
     </div>
   );
 }

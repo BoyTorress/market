@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { CustomerHeader } from "@/components/CustomerHeader";
+import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,38 +83,40 @@ export default function Checkout() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <CustomerHeader />
-        <div className="container mx-auto px-4 py-12 text-center">
+        <div className="container mx-auto px-4 py-12 text-center flex-1">
           <h1 className="mb-4 text-2xl font-bold">Inicia sesión para continuar</h1>
           <p className="text-muted-foreground mb-6">
             Necesitas iniciar sesión para crear un pedido
           </p>
-          <Button onClick={() => (window.location.href = "/login")}>
+          <Button onClick={() => setLocation("/")}>
             Iniciar Sesión
           </Button>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <CustomerHeader />
-        <div className="container mx-auto px-4 py-12 text-center">
+        <div className="container mx-auto px-4 py-12 text-center flex-1">
           <h1 className="mb-4 text-2xl font-bold">Carrito vacío</h1>
           <p className="text-muted-foreground mb-6">
             Agrega productos al carrito antes de continuar
           </p>
-          <Button onClick={() => setLocation("/menu")}>Ver Menú</Button>
+          <Button onClick={() => setLocation("/")}>Ver Menú</Button>
         </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <CustomerHeader />
 
       <div className="container mx-auto px-4 py-12">
@@ -239,6 +242,8 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
