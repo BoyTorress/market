@@ -4,6 +4,7 @@ import { CustomerHeader } from "@/components/CustomerHeader";
 import { Hero } from "@/components/Hero";
 import { MenuCard } from "@/components/MenuCard";
 import { CartSidebar } from "@/components/CartSidebar";
+import { Footer } from "@/components/Footer";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -105,7 +106,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <CustomerHeader
         cartItemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
         onCartClick={() => setCartOpen(true)}
@@ -113,17 +114,17 @@ export default function Home() {
 
       <Hero />
 
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 py-12 flex-1">
         <div className="mb-8">
-          <h2 className="mb-2 font-serif text-3xl font-bold">Nuestro Menú</h2>
+          <h2 className="mb-2 font-serif text-3xl font-bold">Nuestros Productos</h2>
           <p className="mb-4 text-muted-foreground">
-            Platillos auténticos preparados con ingredientes frescos
+            Productos coreanos auténticos y de calidad
           </p>
 
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Buscar platillos..."
+              placeholder="Buscar productos..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -136,8 +137,8 @@ export default function Home() {
           <div className="text-center py-12">
             <p className="text-muted-foreground">
               {searchQuery
-                ? "No se encontraron platillos que coincidan con tu búsqueda"
-                : "No hay platillos disponibles en este momento"}
+                ? "No se encontraron productos que coincidan con tu búsqueda"
+                : "No hay productos disponibles en este momento"}
             </p>
           </div>
         ) : (
@@ -157,6 +158,8 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      <Footer />
 
       <CartSidebar
         open={cartOpen}

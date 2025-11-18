@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import heroImage from "@assets/generated_images/Hero_ramen_bowl_image_a8d1c990.png";
+import heroImage from "@assets/generated_images/Korean_market_hero_banner_6f579b9a.png";
 
 export function Hero() {
   return (
@@ -8,15 +8,17 @@ export function Hero() {
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${heroImage})` }}
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
       
       <div className="relative container mx-auto flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
         <h1 className="mb-4 font-serif text-5xl font-bold text-white md:text-6xl" data-testid="text-hero-title">
-          Auténtico Ramen Japonés
+          K-Market Express
         </h1>
+        <p className="mb-2 max-w-2xl text-2xl text-white/95 md:text-3xl font-semibold">
+          Minimarket de Conveniencia Coreano
+        </p>
         <p className="mb-8 max-w-2xl text-lg text-white/90 md:text-xl" data-testid="text-hero-subtitle">
-          Ordena tus platillos favoritos y recógelos en nuestro local. 
-          Sabor tradicional, servicio express.
+          Ramens • Snacks • Bebestibles • Tteokbokki
         </p>
         <div className="flex flex-wrap items-center justify-center gap-4">
           <Button 

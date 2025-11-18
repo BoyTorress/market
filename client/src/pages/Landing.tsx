@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Hero } from "@/components/Hero";
+import { Footer } from "@/components/Footer";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
@@ -59,7 +60,7 @@ export default function Landing() {
     onSuccess: () => {
       toast({
         title: "¡Registro exitoso!",
-        description: "Bienvenido a MarketExpress",
+        description: "Bienvenido a K-Market Express",
       });
       window.location.href = "/";
     },
@@ -98,10 +99,10 @@ export default function Landing() {
         <div className="w-full max-w-md">
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-2 font-serif text-2xl font-bold mb-2">
-              <span className="text-primary">Market</span>
+              <span className="text-primary">K-Market</span>
               <span>Express</span>
             </div>
-            <p className="text-sm text-muted-foreground">Ramen auténtico a tu alcance</p>
+            <p className="text-sm text-muted-foreground">Minimarket de conveniencia coreano</p>
           </div>
 
           <Tabs defaultValue="login" className="w-full">
@@ -248,7 +249,7 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       <header className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2 font-serif text-xl font-bold">
-          <span className="text-primary">Market</span>
+          <span className="text-primary">K-Market</span>
           <span>Express</span>
         </div>
         <Button onClick={() => setShowAuth(true)} data-testid="button-login">
@@ -259,15 +260,17 @@ export default function Landing() {
       <Hero />
 
       <section className="container mx-auto px-4 py-16 text-center">
-        <h2 className="mb-4 text-3xl font-bold">Ordena Fácil, Recoge Rápido</h2>
+        <h2 className="mb-4 text-3xl font-bold">Tus Productos Coreanos Favoritos</h2>
         <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-          Con MarketExpress, puedes explorar nuestro menú completo, personalizar tu pedido
-          y programar la hora de retiro que mejor te convenga. Todo desde la comodidad de tu dispositivo.
+          Con K-Market Express, encuentra los mejores productos coreanos: ramens, snacks, 
+          bebestibles y tteokbokki. Recoge en nuestro local de Viña del Mar.
         </p>
         <Button size="lg" onClick={() => setShowAuth(true)}>
           Comenzar Ahora
         </Button>
       </section>
+
+      <Footer />
     </div>
   );
 }

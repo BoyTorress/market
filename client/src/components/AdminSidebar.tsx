@@ -35,7 +35,7 @@ export function AdminSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="font-serif text-lg">
-            <span className="text-primary">Market</span>Express Admin
+            <span className="text-primary">K-Market</span> Express Admin
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
