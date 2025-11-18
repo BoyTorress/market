@@ -238,7 +238,7 @@ export default function Landing() {
           </Tabs>
 
           <p className="text-xs text-center text-muted-foreground mt-4">
-            Demo: admin@ramen.com / admin123
+            Demo: admin@kmarket.com / admin123
           </p>
         </div>
       </div>

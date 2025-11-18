@@ -7,10 +7,10 @@ async function seed() {
   // Create admin user
   const adminPassword = await bcrypt.hash("admin123", 10);
   await storage.createUser({
-    email: "admin@ramen.com",
+    email: "admin@kmarket.com",
     password: adminPassword,
     firstName: "Admin",
-    lastName: "Principal",
+    lastName: "K-Market",
     role: "admin",
   });
 
@@ -25,151 +25,176 @@ async function seed() {
   });
 
   console.log("Users created");
-  console.log("Admin: admin@ramen.com / admin123");
+  console.log("Admin: admin@kmarket.com / admin123");
   console.log("Cliente: cliente@ejemplo.com / customer123");
 
   // Create menu categories
   const ramenCategory = await storage.createCategory({
-    name: "Ramen",
+    name: "Ramens",
     displayOrder: 1,
   });
 
-  const appetizerCategory = await storage.createCategory({
-    name: "Entrada",
+  const bebestiblesCategory = await storage.createCategory({
+    name: "Bebestibles",
     displayOrder: 2,
   });
 
-  const dessertCategory = await storage.createCategory({
-    name: "Postre",
+  const snacksCategory = await storage.createCategory({
+    name: "Snacks",
     displayOrder: 3,
+  });
+
+  const tteokbokkiCategory = await storage.createCategory({
+    name: "Tteokbokki",
+    displayOrder: 4,
   });
 
   console.log("Categories created");
 
-  // Create menu items
+  // Create menu items - Ramens
   await storage.createMenuItem({
     categoryId: ramenCategory.id,
-    name: "Miso Ramen",
-    description: "Caldo rico de miso con fideos, maíz, brotes de soya y cerdo chashu",
-    priceCents: 1299,
-    imageUrl: "/generated_images/Miso_ramen_menu_item_312c9d00.png",
+    name: "Ramen Instantáneo Coreano",
+    description: "Ramen coreano clásico con fideos y caldo picante",
+    priceCents: 1500,
+    imageUrl: "/generated_images/Korean_instant_ramen_bowl_df85e0fd.png",
     isAvailable: true,
-    stock: 25,
+    stock: 50,
   });
 
   await storage.createMenuItem({
     categoryId: ramenCategory.id,
-    name: "Shoyu Ramen",
-    description: "Caldo de soya clara con fideos delgados, nori, menma y chashu",
-    priceCents: 1199,
-    imageUrl: "/generated_images/Shoyu_ramen_menu_item_fef13de3.png",
+    name: "Kimchi Ramen",
+    description: "Ramen picante con kimchi, cebolla verde y semillas de sésamo",
+    priceCents: 1800,
+    imageUrl: "/generated_images/Korean_kimchi_ramen_93831ee3.png",
     isAvailable: true,
-    stock: 18,
+    stock: 35,
   });
 
   await storage.createMenuItem({
     categoryId: ramenCategory.id,
-    name: "Tan Tan Picante",
-    description: "Ramen picante con carne molida, bok choy y aceite de chile",
-    priceCents: 1399,
-    imageUrl: "/generated_images/Spicy_tan_tan_ramen_bba0243c.png",
+    name: "Ramen de Mariscos",
+    description: "Ramen cremoso con camarones, pastel de pescado y vegetales frescos",
+    priceCents: 2200,
+    imageUrl: "/generated_images/Korean_seafood_ramen_6c433a43.png",
     isAvailable: true,
-    stock: 20,
+    stock: 28,
+  });
+
+  // Bebestibles (Beverages)
+  await storage.createMenuItem({
+    categoryId: bebestiblesCategory.id,
+    name: "Leche Saborizada Coreana",
+    description: "Leche de plátano y otras variedades coreanas en botella icónica",
+    priceCents: 1200,
+    imageUrl: "/generated_images/Korean_flavored_milk_drinks_6b84aca4.png",
+    isAvailable: true,
+    stock: 45,
   });
 
   await storage.createMenuItem({
-    categoryId: appetizerCategory.id,
-    name: "Gyoza (6 pzs)",
-    description: "Dumplings de cerdo dorados servidos con salsa de soya",
-    priceCents: 799,
-    imageUrl: "/generated_images/Gyoza_appetizer_1f44f37d.png",
+    categoryId: bebestiblesCategory.id,
+    name: "Bebidas Coreanas Variadas",
+    description: "Soju, bebidas enlatadas coreanas y más opciones refrescantes",
+    priceCents: 2500,
+    imageUrl: "/generated_images/Korean_beverages_and_drinks_bbd73721.png",
+    isAvailable: true,
+    stock: 60,
+  });
+
+  // Snacks
+  await storage.createMenuItem({
+    categoryId: snacksCategory.id,
+    name: "Snacks Coreanos Mix",
+    description: "Surtido de chips, galletas de arroz y snacks de alga nori",
+    priceCents: 1800,
+    imageUrl: "/generated_images/Korean_snacks_assortment_6d010e6a.png",
+    isAvailable: true,
+    stock: 40,
+  });
+
+  await storage.createMenuItem({
+    categoryId: snacksCategory.id,
+    name: "Snacks Coreanos Populares",
+    description: "Honey Butter Chips, Pepero, Choco Pie y algas secas",
+    priceCents: 2000,
+    imageUrl: "/generated_images/Popular_Korean_snacks_e9a807f8.png",
+    isAvailable: true,
+    stock: 55,
+  });
+
+  // Tteokbokki
+  await storage.createMenuItem({
+    categoryId: tteokbokkiCategory.id,
+    name: "Tteokbokki Clásico",
+    description: "Pasteles de arroz cilíndricos en salsa gochujang picante con cebolla verde",
+    priceCents: 2500,
+    imageUrl: "/generated_images/Tteokbokki_Korean_rice_cakes_99d2836b.png",
     isAvailable: true,
     stock: 30,
   });
 
   await storage.createMenuItem({
-    categoryId: appetizerCategory.id,
-    name: "Edamame",
-    description: "Vainas de soya saladas al vapor",
-    priceCents: 599,
-    imageUrl: "/generated_images/Edamame_appetizer_693b0fdf.png",
+    categoryId: tteokbokkiCategory.id,
+    name: "Tteokbokki con Queso",
+    description: "Tteokbokki picante cubierto con queso mozzarella derretido",
+    priceCents: 3200,
+    imageUrl: "/generated_images/Cheese_tteokbokki_special_038a69d5.png",
     isAvailable: true,
-    stock: 0,
-  });
-
-  await storage.createMenuItem({
-    categoryId: appetizerCategory.id,
-    name: "Takoyaki (6 pzs)",
-    description: "Bolas de pulpo con salsa y bonito",
-    priceCents: 899,
-    imageUrl: "/generated_images/Takoyaki_appetizer_42e4b02e.png",
-    isAvailable: true,
-    stock: 15,
-  });
-
-  await storage.createMenuItem({
-    categoryId: dessertCategory.id,
-    name: "Cheesecake Matcha",
-    description: "Cheesecake cremoso de té verde matcha",
-    priceCents: 699,
-    imageUrl: "/generated_images/Matcha_cheesecake_dessert_ba818590.png",
-    isAvailable: true,
-    stock: 12,
-  });
-
-  await storage.createMenuItem({
-    categoryId: dessertCategory.id,
-    name: "Mochi Ice Cream (3 pzs)",
-    description: "Helado envuelto en mochi suave",
-    priceCents: 599,
-    imageUrl: "/generated_images/Mochi_ice_cream_dessert_2571432d.png",
-    isAvailable: true,
-    stock: 20,
+    stock: 25,
   });
 
   console.log("Menu items created");
 
   // Create inventory items
   await storage.createInventoryItem({
-    name: "Fideos Frescos",
+    name: "Fideos Ramen Coreano",
+    unit: "paquetes",
+    currentStock: 100,
+    reorderPoint: 40,
+  });
+
+  await storage.createInventoryItem({
+    name: "Gochujang (Pasta de Chile)",
     unit: "kg",
     currentStock: 15,
-    reorderPoint: 20,
+    reorderPoint: 8,
   });
 
   await storage.createInventoryItem({
-    name: "Caldo de Cerdo",
-    unit: "L",
-    currentStock: 45,
-    reorderPoint: 30,
-  });
-
-  await storage.createInventoryItem({
-    name: "Chashu (Cerdo)",
+    name: "Tteok (Pasteles de Arroz)",
     unit: "kg",
-    currentStock: 8,
+    currentStock: 20,
     reorderPoint: 10,
   });
 
   await storage.createInventoryItem({
-    name: "Huevos",
-    unit: "pzs",
-    currentStock: 0,
-    reorderPoint: 50,
-  });
-
-  await storage.createInventoryItem({
-    name: "Nori (Algas)",
-    unit: "paquetes",
-    currentStock: 25,
-    reorderPoint: 15,
-  });
-
-  await storage.createInventoryItem({
-    name: "Pasta Miso",
+    name: "Kimchi",
     unit: "kg",
-    currentStock: 6,
-    reorderPoint: 8,
+    currentStock: 25,
+    reorderPoint: 12,
+  });
+
+  await storage.createInventoryItem({
+    name: "Leche Coreana Saborizada",
+    unit: "unidades",
+    currentStock: 60,
+    reorderPoint: 30,
+  });
+
+  await storage.createInventoryItem({
+    name: "Snacks Coreanos Variados",
+    unit: "paquetes",
+    currentStock: 80,
+    reorderPoint: 35,
+  });
+
+  await storage.createInventoryItem({
+    name: "Queso Mozzarella",
+    unit: "kg",
+    currentStock: 10,
+    reorderPoint: 6,
   });
 
   console.log("Inventory items created");
