@@ -13,23 +13,17 @@ export function CustomerHeader({ cartItemCount = 0, onCartClick }: CustomerHeade
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/">
-          <a className="flex items-center gap-2 font-serif text-xl font-bold" data-testid="link-home">
-            <span className="text-primary">Market</span>
-            <span>Express</span>
-          </a>
+        <Link href="/" className="flex items-center gap-2 font-serif text-xl font-bold" data-testid="link-home">
+          <span className="text-primary">Market</span>
+          <span>Express</span>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
-          <Link href="/menu">
-            <a className="text-sm font-medium transition-colors hover:text-primary" data-testid="link-menu">
-              Menú
-            </a>
+          <Link href="/menu" className="text-sm font-medium transition-colors hover:text-primary" data-testid="link-menu">
+            Menú
           </Link>
-          <Link href="/my-orders">
-            <a className="text-sm font-medium transition-colors hover:text-primary" data-testid="link-my-orders">
-              Mis Pedidos
-            </a>
+          <Link href="/my-orders" className="text-sm font-medium transition-colors hover:text-primary" data-testid="link-my-orders">
+            Mis Pedidos
           </Link>
         </nav>
 

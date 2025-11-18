@@ -48,11 +48,9 @@ export function AdminSidebar() {
                       isActive={isActive}
                       data-testid={`link-admin-${item.testId}`}
                     >
-                      <Link href={item.url}>
-                        <a className="flex items-center gap-2">
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                        </a>
+                      <Link href={item.url} className="flex items-center gap-2">
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

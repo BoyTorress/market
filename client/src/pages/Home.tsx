@@ -1,17 +1,14 @@
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { CustomerHeader } from "@/components/CustomerHeader";
 import { Hero } from "@/components/Hero";
 import { MenuCard } from "@/components/MenuCard";
 import { CartSidebar } from "@/components/CartSidebar";
-
-import misoRamenImage from "@assets/generated_images/Miso_ramen_menu_item_312c9d00.png";
-import shoyuRamenImage from "@assets/generated_images/Shoyu_ramen_menu_item_fef13de3.png";
-import spicyRamenImage from "@assets/generated_images/Spicy_tan_tan_ramen_bba0243c.png";
-import gyozaImage from "@assets/generated_images/Gyoza_appetizer_1f44f37d.png";
-import edamameImage from "@assets/generated_images/Edamame_appetizer_693b0fdf.png";
-import takoyakiImage from "@assets/generated_images/Takoyaki_appetizer_42e4b02e.png";
-import matchaImage from "@assets/generated_images/Matcha_cheesecake_dessert_ba818590.png";
-import mochiImage from "@assets/generated_images/Mochi_ice_cream_dessert_2571432d.png";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import type { MenuItem } from "@shared/schema";
 
 interface CartItem {
   id: string;
@@ -23,67 +20,142 @@ interface CartItem {
 
 export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
 
-  const menuItems = [
-    { id: "miso", name: "Miso Ramen", description: "Caldo rico de miso con fideos, maíz, brotes de soya y cerdo chashu", price: 12.99, image: misoRamenImage, category: "Ramen" },
-    { id: "shoyu", name: "Shoyu Ramen", description: "Caldo de soya clara con fideos delgados, nori, menma y chashu", price: 11.99, image: shoyuRamenImage, category: "Ramen" },
-    { id: "spicy", name: "Tan Tan Picante", description: "Ramen picante con carne molida, bok choy y aceite de chile", price: 13.99, image: spicyRamenImage, category: "Ramen" },
-    { id: "gyoza", name: "Gyoza (6 pzs)", description: "Dumplings de cerdo dorados servidos con salsa de soya", price: 7.99, image: gyozaImage, category: "Entrada" },
-    { id: "edamame", name: "Edamame", description: "Vainas de soya saladas al vapor", price: 5.99, image: edamameImage, category: "Entrada" },
-    { id: "takoyaki", name: "Takoyaki (6 pzs)", description: "Bolas de pulpo con salsa y bonito", price: 8.99, image: takoyakiImage, category: "Entrada" },
-    { id: "matcha", name: "Cheesecake Matcha", description: "Cheesecake cremoso de té verde matcha", price: 6.99, image: matchaImage, category: "Postre" },
-    { id: "mochi", name: "Mochi Ice Cream", description: "Helado envuelto en mochi suave (3 pzs)", price: 5.99, image: mochiImage, category: "Postre" },
-  ];
+  // Fetch menu items
+  const { data: menuItems = [], isLoading } = useQuery<MenuItem[]>({
+    queryKey: searchQuery ? ["/api/menu/search", searchQuery] : ["/api/menu"],
+    queryFn: () => {
+      const url = searchQuery
+        ? `/api/menu/search?q=${encodeURIComponent(searchQuery)}`
+        : "/api/menu";
+      return fetch(url).then((res) => res.json());
+    },
+  });
 
-  const addToCart = (item: typeof menuItems[0]) => {
-    setCartItems(prev => {
-      const existing = prev.find(i => i.id === item.id);
-      if (existing) {
-        return prev.map(i => 
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
-      }
-      return [...prev, { ...item, quantity: 1 }];
+  // Local cart state (could be persisted to localStorage)
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem("cart");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Update localStorage when cart changes
+  const updateCart = (items: CartItem[]) => {
+    setCartItems(items);
+    localStorage.setItem("cart", JSON.stringify(items));
+  };
+
+  const addToCart = (item: MenuItem) => {
+    const newItems = [...cartItems];
+    const existing = newItems.find((i) => i.id === item.id);
+    
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      newItems.push({
+        id: item.id,
+        name: item.name,
+        price: item.priceCents / 100,
+        quantity: 1,
+        image: item.imageUrl,
+      });
+    }
+    
+    updateCart(newItems);
+    toast({
+      title: "Agregado al carrito",
+      description: `${item.name} agregado exitosamente`,
     });
   };
 
   const updateQuantity = (id: string, quantity: number) => {
     if (quantity === 0) {
-      setCartItems(prev => prev.filter(item => item.id !== id));
+      updateCart(cartItems.filter((item) => item.id !== id));
     } else {
-      setCartItems(prev => 
-        prev.map(item => item.id === id ? { ...item, quantity } : item)
+      updateCart(
+        cartItems.map((item) =>
+          item.id === id ? { ...item, quantity } : item
+        )
       );
     }
   };
 
+  const handleCheckout = () => {
+    if (cartItems.length === 0) {
+      toast({
+        title: "Carrito vacío",
+        description: "Agrega productos antes de continuar",
+        variant: "destructive",
+      });
+      return;
+    }
+    window.location.href = "/checkout";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
+          <p className="text-muted-foreground">Cargando menú...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      <CustomerHeader 
+      <CustomerHeader
         cartItemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
         onCartClick={() => setCartOpen(true)}
       />
-      
+
       <Hero />
 
       <section className="container mx-auto px-4 py-12">
         <div className="mb-8">
           <h2 className="mb-2 font-serif text-3xl font-bold">Nuestro Menú</h2>
-          <p className="text-muted-foreground">
+          <p className="mb-4 text-muted-foreground">
             Platillos auténticos preparados con ingredientes frescos
           </p>
+
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar platillos..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              data-testid="input-search"
+            />
+          </div>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {menuItems.map((item) => (
-            <MenuCard
-              key={item.id}
-              {...item}
-              onAddToCart={() => addToCart(item)}
-            />
-          ))}
-        </div>
+        {menuItems.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">
+              {searchQuery
+                ? "No se encontraron platillos que coincidan con tu búsqueda"
+                : "No hay platillos disponibles en este momento"}
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {menuItems.map((item) => (
+              <MenuCard
+                key={item.id}
+                id={item.id}
+                name={item.name}
+                description={item.description}
+                price={item.priceCents / 100}
+                image={item.imageUrl}
+                inStock={item.isAvailable && item.stock > 0}
+                onAddToCart={() => addToCart(item)}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       <CartSidebar
@@ -91,10 +163,7 @@ export default function Home() {
         onClose={() => setCartOpen(false)}
         items={cartItems}
         onUpdateQuantity={updateQuantity}
-        onCheckout={() => {
-          console.log('Checkout with items:', cartItems);
-          setCartOpen(false);
-        }}
+        onCheckout={handleCheckout}
       />
     </div>
   );
