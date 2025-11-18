@@ -24,6 +24,16 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
+  // Fetch user info
+  const { data: user } = useQuery({
+    queryKey: ["/api/auth/user"],
+    queryFn: async () => {
+      const res = await fetch("/api/auth/user", { credentials: "include" });
+      if (!res.ok) return null;
+      return res.json();
+    },
+  });
+
   // Fetch menu items
   const { data: menuItems = [], isLoading } = useQuery<MenuItem[]>({
     queryKey: searchQuery ? ["/api/menu/search", searchQuery] : ["/api/menu"],
@@ -112,10 +122,20 @@ export default function Home() {
         onCartClick={() => setCartOpen(true)}
       />
 
-      <Hero />
+      <Hero isAuthenticated={true} />
 
       <section className="container mx-auto px-4 py-12 flex-1">
         <div className="mb-8">
+          {user && (
+            <div className="mb-6 rounded-lg bg-primary/5 border border-primary/20 p-4">
+              <h2 className="text-2xl font-bold">
+                ¡Bienvenido{user.firstName ? `, ${user.firstName}` : ''}! 👋
+              </h2>
+              <p className="text-muted-foreground mt-1">
+                Explora nuestros productos coreanos y encuentra tus favoritos
+              </p>
+            </div>
+          )}
           <h2 className="mb-2 font-serif text-3xl font-bold">Nuestros Productos</h2>
           <p className="mb-4 text-muted-foreground">
             Productos coreanos auténticos y de calidad

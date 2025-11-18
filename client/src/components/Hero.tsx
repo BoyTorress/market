@@ -1,7 +1,30 @@
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 import heroImage from "@assets/generated_images/Korean_market_hero_banner_6f579b9a.png";
 
-export function Hero() {
+interface HeroProps {
+  isAuthenticated?: boolean;
+}
+
+export function Hero({ isAuthenticated = false }: HeroProps) {
+  const [, setLocation] = useLocation();
+
+  const handleOrderNow = () => {
+    if (isAuthenticated) {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    } else {
+      setLocation("/");
+    }
+  };
+
+  const handleViewMenu = () => {
+    if (isAuthenticated) {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    } else {
+      setLocation("/");
+    }
+  };
+
   return (
     <section className="relative min-h-[70vh] w-full overflow-hidden">
       <div 
@@ -25,6 +48,7 @@ export function Hero() {
             size="lg" 
             className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20"
             data-testid="button-order-now"
+            onClick={handleOrderNow}
           >
             Ordenar Ahora
           </Button>
@@ -33,6 +57,7 @@ export function Hero() {
             variant="outline"
             className="backdrop-blur-sm border-white/40 bg-white/5 text-white hover:bg-white/10"
             data-testid="button-view-menu"
+            onClick={handleViewMenu}
           >
             Ver Menú
           </Button>

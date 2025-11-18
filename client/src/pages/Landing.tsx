@@ -257,7 +257,7 @@ export default function Landing() {
         </Button>
       </header>
 
-      <Hero />
+      <Hero isAuthenticated={false} />
 
       <section className="container mx-auto px-4 py-16 text-center">
         <h2 className="mb-4 text-3xl font-bold">Tus Productos Coreanos Favoritos</h2>
@@ -268,6 +268,106 @@ export default function Landing() {
         <Button size="lg" onClick={() => setShowAuth(true)}>
           Comenzar Ahora
         </Button>
+      </section>
+
+      <section className="bg-muted/30 py-16">
+        <div className="container mx-auto px-4">
+          <h2 className="mb-12 text-center text-3xl font-bold">¿Por qué K-Market Express?</h2>
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="text-center">
+              <div className="mb-4 flex justify-center">
+                <div className="rounded-full bg-primary/10 p-4">
+                  <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Servicio Express</h3>
+              <p className="text-muted-foreground">
+                Ordena online y recoge rápidamente en nuestro local. Sin esperas innecesarias.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="mb-4 flex justify-center">
+                <div className="rounded-full bg-primary/10 p-4">
+                  <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Productos Auténticos</h3>
+              <p className="text-muted-foreground">
+                Importamos directamente productos coreanos de la más alta calidad.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="mb-4 flex justify-center">
+                <div className="rounded-full bg-primary/10 p-4">
+                  <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Precios Accesibles</h3>
+              <p className="text-muted-foreground">
+                Los mejores precios en productos coreanos en Viña del Mar.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 py-16">
+        <div className="grid gap-8 md:grid-cols-2 items-center">
+          <div>
+            <h2 className="mb-4 text-3xl font-bold">Encuentra Todo lo que Necesitas</h2>
+            <p className="mb-6 text-lg text-muted-foreground">
+              En K-Market Express tenemos una amplia selección de productos coreanos para todos los gustos:
+            </p>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-2">
+                <span className="mt-1 text-primary">✓</span>
+                <span><strong>Ramens:</strong> Desde los clásicos hasta las variedades más picantes</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 text-primary">✓</span>
+                <span><strong>Tteokbokki:</strong> Pasteles de arroz tradicionales y con queso</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 text-primary">✓</span>
+                <span><strong>Snacks:</strong> Chips, galletas y dulces coreanos populares</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="mt-1 text-primary">✓</span>
+                <span><strong>Bebestibles:</strong> Soju, leches saborizadas y bebidas refrescantes</span>
+              </li>
+            </ul>
+          </div>
+          <div className="rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 p-8">
+            <h3 className="mb-4 text-2xl font-bold">Horarios de Atención</h3>
+            <div className="space-y-2 text-muted-foreground">
+              <p className="flex justify-between">
+                <span>Lunes - Viernes:</span>
+                <span className="font-semibold">10:00 - 20:00</span>
+              </p>
+              <p className="flex justify-between">
+                <span>Sábado:</span>
+                <span className="font-semibold">10:00 - 21:00</span>
+              </p>
+              <p className="flex justify-between">
+                <span>Domingo:</span>
+                <span className="font-semibold">11:00 - 19:00</span>
+              </p>
+            </div>
+            <div className="mt-6 border-t pt-4">
+              <p className="text-sm">
+                <strong>Ubicación:</strong><br />
+                Viana 405, Local 3<br />
+                Viña del Mar
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <Footer />
